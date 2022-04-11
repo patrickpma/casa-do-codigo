@@ -56,7 +56,7 @@ class LivroDao {
 
     }
 
-    atualiza(livro,id) {
+    atualiza(livro) {
         return new Promise((resolve, reject) => {
             this._db.run(`
                 UPDATE LIVROS SET
@@ -69,7 +69,7 @@ class LivroDao {
                     livro.titulo,
                     livro.preco,
                     livro.descricao,
-                    id
+                    livro.id
                 ],
                 function (err) {
                     if (err) {

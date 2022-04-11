@@ -22,7 +22,14 @@ module.exports = (app) => {
     });
 
     app.get('/livros/form', function (req, resp) {
-        resp.marko(require('../views/livros/form/form.marko'));
+        resp.marko(require('../views/livros/form/form.marko'),{livro: {}});
+    });
+
+    app.get('/livros/form/:id', function (req, resp) {
+        const { id } = req.params;
+        const livroDao = new LivroDao(db);
+        livroDao.buscaPorId(id).then(livro => resp.marko(require('../views/livros/form/form.marko'), { livro }))
+            .catch(erro => console.log(erro))
     });
 
     app.get('/livros/:id', function (req, resp) {
@@ -38,17 +45,16 @@ module.exports = (app) => {
         livroDao.adiciona(req.body).then(resp.redirect('/livros')).catch(erro => console.log(erro));
     });
 
-    app.put('/livros/:id', function (req, resp) {
+    app.put('/livros/', function (req, resp) {
         console.log(req.body);
-        const { id } = req.params;
         const livroDao = new LivroDao(db);
-        livroDao.atualiza(req.body,id).then(resp.send(req.body)).catch(erro => console.log(erro));
+        livroDao.atualiza(req.body).then(resp.redirect('/livros')).catch(erro => console.log(erro));
     });
 
     app.delete('/livros/:id', function (req, resp) {
         const { id } = req.params;
         const livroDao = new LivroDao(db);
-        livroDao.remove(id).then(()=> resp.status(200).end()).catch(erro => console.log(erro));
+        livroDao.remove(id).then(() => resp.status(200).end()).catch(erro => console.log(erro));
     });
 
 
