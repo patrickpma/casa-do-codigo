@@ -3,7 +3,7 @@ const LivroDao = require('../infra/livros-dao');
 
 module.exports = (app) => {
     app.get('/', function (req, res) {
-        res.send("Casa do Código");
+        res.marko(require('../views/base/home/home.marko'));
     });
 
     app.get('/livros', function (req, resp) {
