@@ -1,61 +1,29 @@
-const db = require('../../config/database');
-const LivroDao = require('../infra/livros-dao');
+const { check } = require('express-validator/check');
+
+const LivroControlador = require('../controladores/livro-controlador');
+const livroControlador = new LivroControlador();
+
+const BaseControlador = require('../controladores/base-controlador');
+const baseControlador = new BaseControlador();
 
 module.exports = (app) => {
-    app.get('/', function (req, res) {
-        res.marko(require('../views/base/home/home.marko'));
-    });
+    
+    app.get('/',baseControlador.home());
 
-    app.get('/livros', function (req, resp) {
-        const livroDao = new LivroDao(db);
+    app.get('/livros', livroControlador.lista());
 
-        //implementação usando Promisse 
-        livroDao.lista().then(livros => resp.marko(require('../views/livros/lista/lista.marko'), {
-            livros: livros
-        })).catch(erro => console.log(erro));
+    app.get('/livros/form', livroControlador.formularioCadastro());
 
-        // livroDao.lista((erro, resultados) => {
-        //     resp.marko(require('../views/livros/lista/lista.marko'), {
-        //         livros: resultados
-        //     });
-        // });
-    });
+     app.get('/livros/form/:id', livroControlador.formularioEdicao());
 
-    app.get('/livros/form', function (req, resp) {
-        resp.marko(require('../views/livros/form/form.marko'),{livro: {}});
-    });
+    app.post('/livros', [
+        check('titulo').isLength({ min: 5 }).withMessage('O titulo precisa ter no minimo 5 caracteres.'),
+        check('preco').isCurrency().withMessage('O preco precisa ter um valor monetario valido')
+    ], livroControlador.cadastra());
 
-    app.get('/livros/form/:id', function (req, resp) {
-        const { id } = req.params;
-        const livroDao = new LivroDao(db);
-        livroDao.buscaPorId(id).then(livro => resp.marko(require('../views/livros/form/form.marko'), { livro }))
-            .catch(erro => console.log(erro))
-    });
+    app.put('/livros/', livroControlador.edita());
 
-    app.get('/livros/:id', function (req, resp) {
-        const { id } = req.params;
-        const livroDao = new LivroDao(db);
-        livroDao.buscaPorId(id).then(livro => { resp.send(livro) }).catch(erro => console.log(erro));
-    });
-
-    app.post('/livros', function (req, resp) {
-        console.log(req.body);
-
-        const livroDao = new LivroDao(db);
-        livroDao.adiciona(req.body).then(resp.redirect('/livros')).catch(erro => console.log(erro));
-    });
-
-    app.put('/livros/', function (req, resp) {
-        console.log(req.body);
-        const livroDao = new LivroDao(db);
-        livroDao.atualiza(req.body).then(resp.redirect('/livros')).catch(erro => console.log(erro));
-    });
-
-    app.delete('/livros/:id', function (req, resp) {
-        const { id } = req.params;
-        const livroDao = new LivroDao(db);
-        livroDao.remove(id).then(() => resp.status(200).end()).catch(erro => console.log(erro));
-    });
+    app.delete('/livros/:id', livroControlador.remove());
 
 
 }
